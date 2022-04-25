@@ -27,3 +27,6 @@ def on_reload(reload_modules):
     """
     # reload_modules(engine)
     bind_methods()
+    
+def on_event(type, e):
+    print(type, e)

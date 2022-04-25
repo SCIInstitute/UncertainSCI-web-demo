@@ -5,6 +5,8 @@ from uncertainsci_web_demo import html as my_widgets
 
 import plotly.graph_objects as go
 import plotly.express as px
+from .engine import MeanStd, Quantiles, SensitivityPiechart, html_plot, PLOTS
+from .controller import on_event
 
 # Create single page layout type
 # (FullScreenPage, SinglePage, SinglePageWithDrawer)
@@ -35,3 +37,19 @@ with layout.content:
                 # unhover=(on_event, "['unhover', $event]"),
             )
             vuetify.VSpacer()
+
+
+# -------------------------------
+# state variables for the simulation
+#-----------------------------------
+
+state.update(
+    {
+        "distribution" : "beta",
+        "model" : "lapace-ode-1d",
+        "alpha" : [ 0.5, 1, 1],
+        "beta" : [ 1, 0.5, 1]
+     }
+
+
+)
