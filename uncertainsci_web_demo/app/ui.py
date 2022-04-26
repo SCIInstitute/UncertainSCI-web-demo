@@ -3,8 +3,7 @@ from trame.layouts import SinglePage
 from trame.html import vuetify, plotly
 from uncertainsci_web_demo import html as my_widgets
 
-import plotly.graph_objects as go
-import plotly.express as px
+
 from .engine import MeanStd, Quantiles, SensitivityPiechart, html_plot, PLOTS
 from .controller import on_event
 
@@ -29,7 +28,7 @@ with layout.content:
         with vuetify.VRow(dense=True):
             vuetify.VSpacer()
             html_plot = plotly.Plotly(
-                "demo",
+                "lapace-ode-1d",
                 display_mode_bar=("true",),
                 selected=(on_event, "['selected', VuePlotly.safe($event)]"),
                 # hover=(on_event, "['hover', VuePlotly.safe($event)]"),

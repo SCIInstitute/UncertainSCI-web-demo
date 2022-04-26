@@ -2,6 +2,11 @@ r"""
 Define your classes and create the instances that you need to expose
 """
 from trame import Singleton, state
+from trame.html import vuetify, plotly
+
+import plotly.graph_objects as go
+import plotly.express as px
+
 import numpy as np
 from UncertainSCI.distributions import BetaDistribution
 from UncertainSCI.model_examples import laplace_ode_1d
@@ -62,6 +67,8 @@ def initialize():
     
     pce_ctrl.set_pce(pce)
     
+    update_plot("MeanStd")
+    
     print(">>> ENGINE: Application initialize only once")
     
 def MeanStd():
@@ -70,8 +77,8 @@ def MeanStd():
     stdev = pce_ctrl.pce.stdev()
 
     x_rev = pce_ctrl.x[::-1]
-    upper = pce_ctrl.mean+pce_ctrl.stdev
-    lower = pce_ctrl.mean-pce_ctrl.stdev
+    upper = mean+stdev
+    lower = mean-stdev
     lower=lower[::- 1]
 
     fig = go.Figure()
@@ -86,7 +93,7 @@ def MeanStd():
         name='Stdev',
     ))
     fig.add_trace(go.Scatter(
-        x=pce_ctrl.x, y=pce_ctrl.mean,
+        x=pce_ctrl.x, y=mean,
         line_color='rgb(0,100,80)',
         name='mean',
     ))
@@ -97,14 +104,19 @@ def MeanStd():
 
 def protocols_ready():
     print(">>> ENGINE: Server protocols initialized / Client not connected yet")
+    update_plot("MeanStd")
+    return True
 
 def reset_resolution():
     state.resolution = 6
+    
 def widget_click():
     print(">>> ENGINE: Widget Click")
+    update_plot()
 
 def widget_change():
     print(">>> ENGINE: Widget Change")
+    update_plot()
 
 # -----------------------------------------------------------------------------
 
@@ -197,7 +209,7 @@ PLOTS = {
     "Sensitivities": SensitivityPiechart,
 }
 
-html_plot = None
+html_plot = plotly.Plotly("")
 
 @state.change("active_plot")
 def update_plot(active_plot, **kwargs):
