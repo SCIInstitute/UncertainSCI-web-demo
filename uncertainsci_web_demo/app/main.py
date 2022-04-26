@@ -220,8 +220,13 @@ def update_plot(active_plot, **kwargs):
 # Main
 # -----------------------------------------------------------------------------
 
-if __name__ == "__main__":
+def main():
     update_plot("MeanStd")
     layout.start()
+    
+    
+if __name__ == "__main__":
+    main()
+    
 
 
