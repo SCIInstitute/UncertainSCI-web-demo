@@ -1,0 +1,4 @@
+PyWebVue: # Default app under /index.html
+  app: uncertainsci-web-demo
+uncertainsci-web-demo: # /uncertainsci-web-demo.html
+  app: uncertainsci-web-demo
