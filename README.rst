@@ -31,7 +31,7 @@ Run the application
 
 .. code-block:: console
 
-    uncertainsci_web_demo
+    uncertainsci-web-demo
 
 Features
 --------
