@@ -1,26 +1,20 @@
-from trame import setup_dev
-
-from . import controller, ui
-
-
-def start_server():
-    setup_dev(ui, controller)
-    print("dev_setup")
-    ui.layout.start()
-    print("layout started")
-    update_plot("MeanStd")
-    print("server started")
+from trame.app import get_server
+from .core import Engine
 
 
-def start_desktop():
-    ui.layout.start_desktop_window()
+def main(server=None, **kwargs):
+    # Get or create server
+    if server is None:
+        server = get_server()
 
+    if isinstance(server, str):
+        server = get_server(server)
 
-def main():
-    controller.on_start()
-    print("on start")
-    start_server()
-    print("all done")
+    # Init application
+    Engine(server)
+
+    # Start server
+    server.start(**kwargs)
 
 
 if __name__ == "__main__":

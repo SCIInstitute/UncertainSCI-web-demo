@@ -1,5 +1,3 @@
-from .app import main
+from trame_client.utils.version import get_version
 
-__all__ = [
-    "main",
-]
+__version__ = get_version("uncertainsci-web-demo")
