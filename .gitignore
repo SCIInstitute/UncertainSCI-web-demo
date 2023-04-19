@@ -27,7 +27,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 __pychache
-bundles/
+bundles/desktop
+bundles/docker/server
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

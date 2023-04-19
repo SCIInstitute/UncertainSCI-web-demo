@@ -118,8 +118,6 @@ class Engine:
 
         # Bind instance methods to state change
         state.change("active_plot")(self.update_plot)
-        print("binding")
-        print(state.active_plot)
 
         # Generate UI
         self.ui()
@@ -152,8 +150,6 @@ class Engine:
         self._server.state.beta = [ 1, 0.5, 1]
     
     def update_plot(self, **kwargs):
-        print("update plot")
-        print(self._server.state.active_plot)
         self._server.controller.figure_update(PLOTS[self._server.state.active_plot]())
         logger.info(f">>> ENGINE(a): updating plot to {self._server.state.active_plot}")
         
@@ -169,8 +165,6 @@ class Engine:
             layout.title.set_text("UncertainSCI demo")
             with layout.toolbar:
                 vuetify.VSpacer()
-                print("toolbar")
-                print(self._server.state.active_plot)
                 vuetify.VSelect(
                     v_model=("active_plot", "Mean and Std"),
                     items=("plots", list(PLOTS.keys())),
