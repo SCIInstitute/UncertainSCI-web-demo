@@ -1,5 +1,6 @@
 from trame.app import get_server
 from .core import Engine
+from . import ui,
 
 
 def main(server=None, **kwargs):
@@ -12,9 +13,11 @@ def main(server=None, **kwargs):
 
     # Init application
     Engine(server)
+    ui.initialize(server)
 
     # Start server
     server.start(**kwargs)
+    
 
 
 if __name__ == "__main__":
