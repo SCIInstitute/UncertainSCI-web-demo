@@ -10,19 +10,16 @@ import jsonpickle
 
 
 import numpy as np
-from UncertainSCI.distributions import BetaDistribution, UniformDistribution, ExponentialDistribution, NormalDistribution
-from UncertainSCI.model_examples import laplace_ode_1d, sine_modulation
 from UncertainSCI.pce import PolynomialChaosExpansion
-
-
-from uncertainsci_web_demo import html as my_widgets
-
-
-from .engine import MODELS, DISTRIBUTIONS
-from .engine import on_event
+from .state_defaults import *
+from .pce_builder import MODELS, DISTRIBUTIONS
 
 # Create single page layout type
 # (FullScreenPage, SinglePage, SinglePageWithDrawer)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 
 def initialize(server):
 
@@ -36,24 +33,149 @@ def initialize(server):
     state.active_plot = default_plot
     
     @state.change("order", "N")
-    def change_model_params():
+    def change_model_params(**kwargs):
         ctrl.build_model()
     
     @state.change("active_plot")
     def update_plot(**kwargs):
-        ctrl.figure_update(make_plot(state.active_plot))
-        logger.info(f">>> ENGINE(a): updating plot to {self._server.state.active_plot}")
+        ctrl.figure_update(PLOTS[state.active_plot]())
+        logger.info(f">>> ENGINE(a): updating plot to {state.active_plot}")
         
+#    def make_plot(active_plot, **kwargs):
+#        func = PLOTS.get(dist_type, lambda: "Invalid plot_type")
+#    return func(state, **kwargs)
+    
+    def MeanStd():
+
+        pce = jsonpickle.decode(state.pce)
+        x = np.array(state.x)
+
+        mean = pce.mean()
+        stdev = pce.stdev()
+
+        x_rev = x[::-1]
+        upper = mean+stdev
+        lower = mean-stdev
+        lower=lower[::- 1]
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=np.hstack((x,x_rev)),
+            y=np.hstack((upper,lower)),
+            fill='toself',
+            fillcolor='rgba(0,100,80,0.2)',
+            line_color='rgba(255,255,255,0)',
+            showlegend=True,
+            name='Stdev',
+        ))
+        fig.add_trace(go.Scatter(
+            x=x, y=mean,
+            line_color='rgb(0,100,80)',
+            name='mean',
+        ))
+
+        fig.update_traces(mode='lines')
+
+        return fig
+
+    # -----------------------------------------------------------------------------
+
+
+    def Quantiles(state):
+        
+        pce = jsonpickle.decode(state.pce)
+        x = np.array(state.x)
+
+        bands = 3
+        band_mass = 1/(2*(bands+1))
+        x_rev = pce_model.x[::-1]
+
+        dq = 0.5/(bands+1)
+        q_lower = np.arange(dq, 0.5-1e-7, dq)[::-1]
+        q_upper = np.arange(0.5 + dq, 1.0-1e-7, dq)
+        quantile_levels = np.append(np.concatenate((q_lower, q_upper)), 0.5)
+
+        quantiles = pce_model.pce.quantile(quantile_levels, M=int(2e3))
+        median = quantiles[-1, :]
+
+        fig = go.Figure()
+
+        for ind in range(bands):
+            alpha = (bands-ind) * 1/bands - (1/(2*bands))
+            upper = quantiles[ind, :]
+            lower = quantiles[bands+ind, ::-1]
+            if ind == 0:
+                fig.add_trace(go.Scatter(
+                    x=np.hstack((pce_model.x,x_rev)),
+                    y=np.hstack((upper,lower)),
+                    fill='toself',
+                    fillcolor='rgba(100,0,0,'+str(alpha)+')',
+                    line_color='rgba(100,0,0,0)',
+                    showlegend=True,
+                    name='{0:1.2f} probability mass (each band)'.format(band_mass),
+                ))
+            else:
+                fig.add_trace(go.Scatter(
+                    x=np.hstack((pce_model.x,x_rev)),
+                    y=np.hstack((upper,lower)),
+                    fill='toself',
+                    fillcolor='rgba(100,0,0,'+str(alpha)+')',
+                    line_color='rgba(100,0,0,0)',
+                    showlegend=False,
+                ))
+
+
+        fig.add_trace(go.Scatter(
+            x=pce_model.x, y=median,
+            line_color='rgb(0,0,0)',
+            name='median',
+        ))
+
+        fig.update_traces(mode='lines')
+
+
+        return fig
+        
+
+
+    # -----------------------------------------------------------------------------
+
+
+    def SensitivityPiechart(state):
+
+        pce = jsonpickle.decode(state.pce)
+        x = np.array(state.x)
+
+        global_sensitivity, variable_interactions = pce_model.pce.global_sensitivity()
+        scalarized_GSI = np.mean(global_sensitivity, axis=1)
+        print(type(scalarized_GSI))
+        labels = [' '.join([pce_model.pce.plabels[v] for v in varlist]) for varlist in variable_interactions]
+        
+    #    print(type(labels[0]))
+    #    print(variable_interactions)
+    #    print(labels)
+    #    print(scalarized_GSI)
+
+        fig = go.Figure(
+            data=[go.Pie(labels=labels, values=scalarized_GSI.tolist())]
+            )
+
+        #    labels = ['Oxygen','Hydrogen','Carbon_Dioxide','Nitrogen']
+        #    values = [4500, 2500, 1053, 500]
+        #
+        #    fig = go.Figure(data=[go.Pie(labels=labels, values=values)])
+
+
+        return fig
+
     PLOTS = {
         "Mean and Std": MeanStd,
         "Quantiles Plot": Quantiles,
         "Sensitivities": SensitivityPiechart,
     }
-        
-    def make_plot(active_plot, **kwargs):
-        func = PLOTS.get(dist_type, lambda: "Invalid plot_type")
-    return func(state, **kwargs)
-        
+
+
 
     with SinglePageLayout(server) as layout:
         # Toolbar
@@ -91,7 +213,7 @@ def initialize(server):
         # Main content
         with layout.content:
             with vuetify.VContainer(fluid=True):
-                with vuetify.VRow(dense=True):
+                with vuetify.VRow(dense=True, style = "min-height: 200;"):
                     create_section_parameters()
                     vuetify.VSpacer()
                     figure = plotly.Figure(
@@ -102,7 +224,7 @@ def initialize(server):
                         # selecting=(on_event, "['selecting', $event]"),
                         # unhover=(on_event, "['unhover', $event]"),
                     )
-                    self.ctrl.figure_update = figure.update
+                    ctrl.figure_update = figure.update
                     vuetify.VSpacer()
 
 
@@ -124,7 +246,7 @@ def create_section_parameters():
                 v_model=("N", 100),      # bind variable with an initial value of 100
                 type="int",
                 min=10, max=1000,                  # slider range
-                change="change_N('N')"
+                change="flushState('N')",
                 dense=True, hide_details=True,  # presentation setup
             )
             vuetify.VSpacer()
@@ -133,135 +255,12 @@ def create_section_parameters():
                 type="int",
                 v_model=("order", 5),      # bind variable with an initial value of 5
                 min=1, max=7,                  # slider range
-                change="change_order('order')"
+                change="flushState('order')",
                 dense=True, hide_details=True,  # presentation setup
             )
 
-
-
-    
-def MeanStd(state):
-
-    pce = jsonpickle.decode(state.pce)
-    x = np.array(state.x)
-
-    mean = pce.mean()
-    stdev = pce.stdev()
-
-    x_rev = pce_model.x[::-1]
-    upper = mean+stdev
-    lower = mean-stdev
-    lower=lower[::- 1]
-
-    fig = go.Figure()
-
-    fig.add_trace(go.Scatter(
-        x=np.hstack((pce_model.x,x_rev)),
-        y=np.hstack((upper,lower)),
-        fill='toself',
-        fillcolor='rgba(0,100,80,0.2)',
-        line_color='rgba(255,255,255,0)',
-        showlegend=True,
-        name='Stdev',
-    ))
-    fig.add_trace(go.Scatter(
-        x=pce_model.x, y=mean,
-        line_color='rgb(0,100,80)',
-        name='mean',
-    ))
-
-    fig.update_traces(mode='lines')
-
-    return fig
-
-# -----------------------------------------------------------------------------
-
-
-def Quantiles(state):
-    
-    pce = jsonpickle.decode(state.pce)
-    x = np.array(state.x)
-
-    bands = 3
-    band_mass = 1/(2*(bands+1))
-    x_rev = pce_model.x[::-1]
-
-    dq = 0.5/(bands+1)
-    q_lower = np.arange(dq, 0.5-1e-7, dq)[::-1]
-    q_upper = np.arange(0.5 + dq, 1.0-1e-7, dq)
-    quantile_levels = np.append(np.concatenate((q_lower, q_upper)), 0.5)
-
-    quantiles = pce_model.pce.quantile(quantile_levels, M=int(2e3))
-    median = quantiles[-1, :]
-
-    fig = go.Figure()
-
-    for ind in range(bands):
-        alpha = (bands-ind) * 1/bands - (1/(2*bands))
-        upper = quantiles[ind, :]
-        lower = quantiles[bands+ind, ::-1]
-        if ind == 0:
-            fig.add_trace(go.Scatter(
-                x=np.hstack((pce_model.x,x_rev)),
-                y=np.hstack((upper,lower)),
-                fill='toself',
-                fillcolor='rgba(100,0,0,'+str(alpha)+')',
-                line_color='rgba(100,0,0,0)',
-                showlegend=True,
-                name='{0:1.2f} probability mass (each band)'.format(band_mass),
-            ))
-        else:
-            fig.add_trace(go.Scatter(
-                x=np.hstack((pce_model.x,x_rev)),
-                y=np.hstack((upper,lower)),
-                fill='toself',
-                fillcolor='rgba(100,0,0,'+str(alpha)+')',
-                line_color='rgba(100,0,0,0)',
-                showlegend=False,
-            ))
-
-
-    fig.add_trace(go.Scatter(
-        x=pce_model.x, y=median,
-        line_color='rgb(0,0,0)',
-        name='median',
-    ))
-
-    fig.update_traces(mode='lines')
-
-
-    return fig
-
-
-# -----------------------------------------------------------------------------
-
-
-def SensitivityPiechart():
-
-    pce = jsonpickle.decode(state.pce)
-    x = np.array(state.x)
-
-    global_sensitivity, variable_interactions = pce_model.pce.global_sensitivity()
-    scalarized_GSI = np.mean(global_sensitivity, axis=1)
-    print(type(scalarized_GSI))
-    labels = [' '.join([pce_model.pce.plabels[v] for v in varlist]) for varlist in variable_interactions]
-    
-#    print(type(labels[0]))
-#    print(variable_interactions)
-#    print(labels)
-#    print(scalarized_GSI)
-
-    fig = go.Figure(
-        data=[go.Pie(labels=labels, values=scalarized_GSI.tolist())]
-        )
-
-    #    labels = ['Oxygen','Hydrogen','Carbon_Dioxide','Nitrogen']
-    #    values = [4500, 2500, 1053, 500]
-    #
-    #    fig = go.Figure(data=[go.Pie(labels=labels, values=values)])
-
-
-    return fig
+def on_event(type, e):
+    print(type, e)
 
 
 

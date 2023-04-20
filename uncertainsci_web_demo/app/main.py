@@ -1,6 +1,6 @@
 from trame.app import get_server
 from .core import Engine
-from . import ui,
+from . import ui
 
 
 def main(server=None, **kwargs):
