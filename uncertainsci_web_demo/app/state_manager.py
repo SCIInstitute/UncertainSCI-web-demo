@@ -27,6 +27,7 @@ def initialize(server):
         ctrl.build_model()
         
     def reset_model():
+    
         logger.info(f">>> reseting model params")
         state.update(default_model_state)
         ctrl.build_model()

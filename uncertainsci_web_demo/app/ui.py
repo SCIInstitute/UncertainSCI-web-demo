@@ -38,14 +38,35 @@ def initialize(server):
 #         dist_param_list += list(default_params_state[k].keys())
 #    print(tuple(dist_param_list))
     
-    @state.change("Nparams", "order", "N", "plabels", "dist_cov", "alpha_0", "beta_0", "dist_mean_0", "loc_0", "lbd_0", "dist_domain_min_0", "dist_domain_max_0", "alpha_1", "beta_1", "dist_mean_1", "loc_1", "lbd_1", "dist_domain_min_1", "dist_domain_max_1",  "alpha_2", "beta_2", "dist_mean_2", "loc_2", "lbd_2", "dist_domain_min_2", "dist_domain_max_2")
-    def change_params(**kwargs):
-        print("changed params")
-        state.flush()
-#        ctrl.build_model()
-        
-        
-    ctrl.change_params = change_params
+    @state.change("Nparams", "order", "N", "plabels")
+    def change_model_params(**kwargs):
+        print("changed model params")
+#        state.flush()
+        ctrl.build_model()
+
+    @state.change("dist_cov", "dist_mean_0", "dist_mean_1",  "dist_mean_2")
+    def change_normal_params(**kwargs):
+        print("changed normal params")
+#        state.flush()
+        ctrl.build_model()
+    
+    @state.change("alpha_0", "beta_0", "dist_domain_0", "alpha_1", "beta_1",  "dist_domain_1", "alpha_2", "beta_2", "dist_domain_2" )
+    def change_beta_params(**kwargs):
+        print("changed beta params")
+#        state.flush()
+        ctrl.build_model()
+
+    @state.change("loc_0", "lbd_0", "loc_1", "lbd_1", "loc_2", "lbd_2" )
+    def change_exponential_params(**kwargs):
+        print("changed exponential params")
+#        state.flush()
+        ctrl.build_model()
+
+    
+    ctrl.change_model_params = change_model_params
+    ctrl.change_normal_params = change_normal_params
+    ctrl.change_beta_params = change_beta_params
+    ctrl.change_exponential_params = change_exponential_params
     
     @state.change("active_plot")
     def update_plot(**kwargs):
@@ -194,26 +215,26 @@ def initialize(server):
             )
         layout.title.set_text("UncertainSCI demo")
         with layout.toolbar:
-    #        with vuetify.VRow(dense=True):
-            vuetify.VSpacer()
-            vuetify.VSelect(
-                v_model=("model_name", default_model),
-                items=("models", list(MODELS.keys())),
-                hide_details=True,
-                dense=True,
-            )
-            vuetify.VSelect(
-                v_model=("dist", default_model_state["dist"]),
-                items=("distributions", list(DISTRIBUTIONS.keys())),
-                hide_details=True,
-                dense=True,
-            )
-            vuetify.VSelect(
-                v_model=("active_plot", "Mean and Std"),
-                items=("plots", list(PLOTS.keys())),
-                hide_details=True,
-                dense=True,
-            )
+            with vuetify.VRow(dense=True):
+                vuetify.VSpacer()
+                vuetify.VSelect(
+                    v_model=("model_name", default_model),
+                    items=("models", list(MODELS.keys())),
+                    hide_details=True,
+                    dense=True,
+                )
+                vuetify.VSelect(
+                    v_model=("dist", default_model_state["dist"]),
+                    items=("distributions", list(DISTRIBUTIONS.keys())),
+                    hide_details=True,
+                    dense=True,
+                )
+                vuetify.VSelect(
+                    v_model=("active_plot", "Mean and Std"),
+                    items=("plots", list(PLOTS.keys())),
+                    hide_details=True,
+                    dense=True,
+                )
             vuetify.VProgressLinear(
                 indeterminate=True,
                 absolute=True,
@@ -250,13 +271,12 @@ def create_section_model_parameters(ctrl):
         _header = vuetify.VCardTitle()
         vuetify.VDivider()
         _content = vuetify.VCardText()
+        _action = vuetify.VCardActions()
         
-        with _header:
-            with vuetify.VBtn(
-                icon = True,
-                click=ctrl.reset_model()
-            ):
-                vuetify.VIcon("Reset Model Parameters")
+        with _action:
+            vuetify.VBtn("Reset",
+                click=ctrl.reset_model
+            )
         _header.add_child("Model parameters")
         
         with _content:
@@ -292,13 +312,12 @@ def create_section_distribution_parameters(ctrl):
         _header = vuetify.VCardTitle()
         vuetify.VDivider()
         _content = vuetify.VCardText()
+        _action = vuetify.VCardActions()
         
-        with _header:
-            with vuetify.VBtn(
-                icon = True,
-                click=ctrl.reset_params(),
-            ):
-                vuetify.VIcon("Reset Distribution Parameters")
+        with _action:
+            vuetify.VBtn("Reset",
+                click=ctrl.reset_params
+            )
                 
         _header.add_child("Distribution \n Parameters")
         
@@ -312,10 +331,10 @@ def create_section_distribution_parameters(ctrl):
 #                with vuetify.VRow(dense=True):
 #                vuetify.VSpacer()
 #                with vuetify.VTab("Beta"):
-            create_section_beta_parameters(not dist=="Beta")
+            create_section_beta_parameters()
 #                with vuetify.VTab("Normal"):
 #                    create_section_beta_parameters()
-            create_section_normal_parameters(not dist=="Normal")
+            create_section_normal_parameters()
 
 def make_param_slider(state_var, label, plabel, dim, bounds, step, dist):
     
@@ -327,14 +346,14 @@ def make_param_slider(state_var, label, plabel, dim, bounds, step, dist):
         v_model=(state_var, default_params_state[dim][state_var]),
         style = "track_active_size_offset : 0 px;",
         type="number",
-        disabled=(not "dist" == dist, ),
+#        disabled=("not dist == '"+dist+"'", ),
         min=bounds[0], max=bounds[1],  step = step,
         change="flushState('"+state_var+"')",
         dense=True, hide_details=False,  # presentation setup
         thumb_label="always", thumb_size="24",
     )
     
-def make_boundary_slider(state_var, label, plabel, dim, bounds, step, disabled):
+def make_boundary_slider(state_var, label, plabel, dim, bounds, step, dist):
 #    with vuetify.VCol(dense=True):
 #        with vuetify.VRow(dense=True):
 #            vuetify.VTextField(
@@ -347,7 +366,7 @@ def make_boundary_slider(state_var, label, plabel, dim, bounds, step, disabled):
         hint = label,
         v_model=(state_var, default_params_state[dim][state_var]),
         min=bounds[0], max=bounds[1],  step = step,
-        disabled= (not "dist" == dist, ),
+#        disabled= ("not dist == '"+dist+"'", ),
         change="flushState('"+state_var+"')",
         dense=True, hide_details=False, type="number",
         thumb_label="always", thumb_size="24",
@@ -387,7 +406,7 @@ def create_section_beta_parameters():
             
             
             
-def create_section_normal_parameters(ctrl):
+def create_section_normal_parameters():
     with vuetify.VCard():
         _header = vuetify.VCardTitle()
         vuetify.VDivider()

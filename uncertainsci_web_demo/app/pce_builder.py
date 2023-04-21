@@ -23,9 +23,11 @@ def initialize(server):
         state.pce = None
     
         
-        print(state.dist_domain_0)
-        print(state.dist_domain_1)
-        print(state.dist_domain_2)
+#        print(state.dist_domain_0)
+#        print(state.dist_domain_1)
+#        print(state.dist_domain_2)
+        
+        print(state.model_name)
         
         
         param_dict = {
@@ -57,14 +59,14 @@ def initialize(server):
         pce.build(model_output=model_output)
         state.pce = jsonpickle.encode(pce)
         
-#        ctrl.update_plot()
+        ctrl.update_plot()
     
     
     def make_distribution(dist_type, param_dict, **kwargs):
         func = DISTRIBUTIONS.get(dist_type, lambda: "Invalid distribution")
-        print(dist_type)
-        print(param_dict)
-        print(func)
+#        print(dist_type)
+#        print(param_dict)
+#        print(func)
         return func(param_dict, **kwargs)
         
     def make_model(model_name, Nparams, N, samples, **kwargs):
@@ -74,14 +76,15 @@ def initialize(server):
              
     @state.change("model_name")
     def change_model(**kwargs):
-        state.flush()
-#        build_model()
-        logger.info(f">>> ENGINE(a): model changed to {state.model}")
+#        state.flush()
+        print(state.model_name)
+        build_model()
+        logger.info(f">>> ENGINE(a): model changed to {state.model_name}")
 
     @state.change("dist")
     def change_distribution(**kwargs):
 #        state.active_tab = state.dist
-#        build_model()
+        build_model()
         logger.info(f">>> ENGINE(a):distribution changed to {state.dist}")
      
     ctrl.build_model = build_model
@@ -111,8 +114,8 @@ def make_NormalDistribution(param_dict):
     return NormalDistribution(mean=np.array(param_dict["mean"]), cov= np.array(param_dict["cov"]) )
     
 def make_ExponentialDistribution(param_dict):
-    print(param_dict["lbd"])
-    print(param_dict["loc"])
+#    print(param_dict["lbd"])
+#    print(param_dict["loc"])
     return ExponentialDistribution(lbd=np.array(param_dict["lbd"]), loc=np.array(param_dict["loc"]))
     
 def make_ConstantParam(param_dict):
