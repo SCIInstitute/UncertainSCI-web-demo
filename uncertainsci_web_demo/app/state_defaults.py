@@ -18,8 +18,7 @@ default_params_state[0] = {
     "dist_mean_0" : 0.0,
     "loc_0" : 0.0,
     "lbd_0" : 3.0,
-    "dist_domain_min_0" : 0.0,
-    "dist_domain_max_0" : 1.0,
+    "dist_domain_0" : [ 0.0,  1.0],
     "constant_0" : 0.5
 }
 
@@ -29,8 +28,7 @@ default_params_state[1] = {
     "dist_mean_1" : 1.0,
     "loc_1" : 0.0,
     "lbd_1" : 3.0,
-    "dist_domain_min_1" : 0.0,
-    "dist_domain_max_1" : 1.0,
+    "dist_domain_1" : [ 0.0,  1.0],
     "constant_1" : 0.5
 }
 
@@ -40,8 +38,7 @@ default_params_state[2] = {
     "dist_mean_2" : 1.0,
     "loc_2" : 0.0,
     "lbd_2" : 3.0,
-    "dist_domain_min_2" : 0.0,
-    "dist_domain_max_2" : 1.0,
+    "dist_domain_2" : [ 0.0,  1.0],
     "constant_2" : 0.5
 }
 
@@ -55,7 +52,7 @@ cov = D @ cov @ D
 
 default_model_state = {
     "Nparams" : Nparams,
-    "order" : 5,
+    "order" : 4,
     "N" : 100,
     "plabels" : ['a', 'b', 'z'],
     "dist" : "Beta",

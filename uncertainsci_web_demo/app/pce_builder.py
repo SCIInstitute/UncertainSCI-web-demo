@@ -23,6 +23,11 @@ def initialize(server):
         state.pce = None
     
         
+        print(state.dist_domain_0)
+        print(state.dist_domain_1)
+        print(state.dist_domain_2)
+        
+        
         param_dict = {
             "alpha" : [state.alpha_0, state.alpha_1, state.alpha_2],
             "beta" : [state.beta_0, state.beta_1, state.beta_2],
@@ -30,7 +35,7 @@ def initialize(server):
             "cov" : state.dist_cov,
             "loc" : [state.loc_0, state.loc_1, state.loc_2],
             "lbd" : [state.lbd_0, state.lbd_1, state.lbd_2],
-            "domain" : [ [state.dist_domain_min_0, state.dist_domain_min_1, state.dist_domain_min_2],  [state.dist_domain_max_0, state.dist_domain_max_1, state.dist_domain_max_2]]
+            "domain" : [ [state.dist_domain_0[0], state.dist_domain_1[0], state.dist_domain_2[0]],  [state.dist_domain_0[1], state.dist_domain_1[1], state.dist_domain_2[1]]]
         }
                 
         p = make_distribution(state.dist, param_dict)
@@ -52,7 +57,7 @@ def initialize(server):
         pce.build(model_output=model_output)
         state.pce = jsonpickle.encode(pce)
         
-        ctrl.figure_update
+#        ctrl.update_plot()
     
     
     def make_distribution(dist_type, param_dict, **kwargs):
@@ -69,17 +74,21 @@ def initialize(server):
              
     @state.change("model_name")
     def change_model(**kwargs):
-        build_model()
+        state.flush()
+#        build_model()
         logger.info(f">>> ENGINE(a): model changed to {state.model}")
 
     @state.change("dist")
     def change_distribution(**kwargs):
-        ctrl.reset_params()
+#        state.active_tab = state.dist
+#        build_model()
         logger.info(f">>> ENGINE(a):distribution changed to {state.dist}")
      
     ctrl.build_model = build_model
     ctrl.change_model = change_model
     ctrl.change_distribution = change_distribution
+    
+    logger.info(f">>> pce_builder initialized")
         
 
 
