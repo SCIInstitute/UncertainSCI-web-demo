@@ -246,8 +246,10 @@ def initialize(server):
         with layout.content:
             with vuetify.VContainer(fluid=True):
                 with vuetify.VRow(dense=True, no_gutters = True):
-                    with vuetify.VCol(dense=False, cols= 4):
+                    with vuetify.VCol(dense=False, cols= 6, align="center"):
                         create_section_model_parameters(ctrl)
+                with vuetify.VRow(dense=True, no_gutters = True):
+                    with vuetify.VCol(dense=False, cols= 4):
                         create_section_distribution_parameters(ctrl)
                     vuetify.VSpacer()
                     figure = plotly.Figure(
@@ -335,6 +337,9 @@ def create_section_distribution_parameters(ctrl):
 #                with vuetify.VTab("Normal"):
 #                    create_section_beta_parameters()
             create_section_normal_parameters()
+            create_section_exponential_parameters()
+            create_section_uniform_parameters()
+            
 
 def make_param_slider(state_var, label, plabel, dim, bounds, step, dist):
     
@@ -422,8 +427,38 @@ def create_section_normal_parameters():
             make_param_slider("dist_mean_2", "p2 mean", "p2", 2, [0.0,1.0], 0.01, "Normal")
             
             vuetify.VSpacer()
-            
+ 
+ 
+def create_section_exponential_parameters():
+    with vuetify.VCard():
+        _header = vuetify.VCardTitle()
+        vuetify.VDivider()
+        _content = vuetify.VCardText()
+    #
+        _header.add_child("Exponential \n Distribution")
         
+        with _content:
+    #            with vuetify.VRow(dense=True):
+            vuetify.VSpacer()
+            make_param_slider("loc_0", "p0 mean", "p0", 0, [-5.0,5.0], 0.01, "Exponential")
+            make_param_slider("lbd_1", "p1 mean", "p0", 1, [-5.0,5.0], 0.01, "Exponential")
+            
+            vuetify.VSpacer()
+
+def create_section_uniform_parameters():
+    with vuetify.VCard():
+        _header = vuetify.VCardTitle()
+        vuetify.VDivider()
+        _content = vuetify.VCardText()
+        #
+        _header.add_child("Uniform \n Distribution")
+        
+        with _content:
+#            with vuetify.VRow(dense=True):
+            vuetify.VSpacer()
+            make_boundary_slider("dist_domain_0", "p0 range", "p0", 0, [-5.0,5.0], 0.1, "Uniform")
+            make_boundary_slider("dist_domain_1", "p1 range", "p1", 1, [-5.0,5.0], 0.1, "Uniform")
+            make_boundary_slider("dist_domain_2", "p2 range", "p2", 2, [-5.0,5.0], 0.1, "Uniform")
             
 
 def on_event(type, e):
