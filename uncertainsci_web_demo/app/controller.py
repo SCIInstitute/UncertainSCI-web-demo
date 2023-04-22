@@ -2,23 +2,23 @@ r"""
 Bind methods to the trame controller
 """
 
-#from trame import controller as ctrl
-#from . import engine
+# from trame import controller as ctrl
+# from . import engine
 #
 #
-#def bind_methods():
+# def bind_methods():
 #    ctrl.on_ready = engine.protocols_ready
 #    ctrl.reset_resolution = engine.reset_resolution
 #    ctrl.widget_click = engine.widget_click
 #    ctrl.widget_change = engine.widget_change
 #
-#def on_start():
+# def on_start():
 #    """Method called for initialization when the application starts"""
 #    engine.initialize()
 #    bind_methods()
 #
 #
-#def on_reload(reload_modules):
+# def on_reload(reload_modules):
 #    """Method called when the module is reloaded
 #
 #    reload_modules is a function that takes modules to reload
@@ -27,6 +27,6 @@ Bind methods to the trame controller
 #    """
 #    # reload_modules(engine)
 #    bind_methods()
-#    
-#def on_event(type, e):
+#
+# def on_event(type, e):
 #    print(type, e)

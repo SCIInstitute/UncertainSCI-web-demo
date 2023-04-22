@@ -22,12 +22,11 @@ def main(server=None, **kwargs):
     ui.initialize(server)
     print("ui initializated")
     server.controller.reset_all()
-    
+
     print("initializated and reset")
 
     # Start server
     server.start(**kwargs)
-    
 
 
 if __name__ == "__main__":
