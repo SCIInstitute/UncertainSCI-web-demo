@@ -44,27 +44,30 @@ def initialize(server):
         #        state.flush()
         ctrl.build_model()
 
-    @state.change("dist_cov", "dist_mean_0", "dist_mean_1", "dist_mean_2")
+    @state.change(
+        "dist_cov",
+        "dist_mean_0",
+        "dist_mean_1",
+        "dist_mean_2"
+    )
     def change_normal_params(**kwargs):
         print("changed normal params")
         ctrl.build_model()
 
     @state.change(
-        "alpha_0",
-        "beta_0",
-        "dist_domain_0",
-        "alpha_1",
-        "beta_1",
-        "dist_domain_1",
-        "alpha_2",
-        "beta_2",
-        "dist_domain_2",
+        "alpha_0", "beta_0", "dist_domain_0",
+        "alpha_1", "beta_1", "dist_domain_1",
+        "alpha_2", "beta_2", "dist_domain_2"
     )
     def change_beta_params(**kwargs):
         print("changed beta params")
         ctrl.build_model()
 
-    @state.change("loc_0", "lbd_0", "loc_1", "lbd_1", "loc_2", "lbd_2")
+    @state.change(
+        "loc_0", "lbd_0",
+        "loc_1", "lbd_1",
+        "loc_2", "lbd_2"
+    )
     def change_exponential_params(**kwargs):
         print("changed exponential params")
         ctrl.build_model()
@@ -262,9 +265,9 @@ def initialize(server):
                 create_section_model_parameters(ctrl)
 
                 with vuetify.VRow(dense=True, no_gutters=True):
-                    with vuetify.VCol(cols=4):
+                    with vuetify.VCol(cols=3):
                         create_section_distribution_parameters(ctrl)
-                    with vuetify.VCol(cols=8, classes="pa-2"):
+                    with vuetify.VCol(cols=9, classes="pa-2"):
                         figure = plotly.Figure(
                             display_logo=False,
                             display_mode_bar=("true",),
@@ -352,8 +355,6 @@ def create_section_distribution_parameters(ctrl):
             # vuetify.VSpacer()
             # with vuetify.VTab("Beta"):
             create_section_beta_parameters()
-            # with vuetify.VTab("Normal"):
-            #     create_section_beta_parameters()
             create_section_normal_parameters()
             create_section_exponential_parameters()
             create_section_uniform_parameters()
@@ -381,13 +382,6 @@ def make_param_slider(state_var, label, plabel, dim, bounds, step, dist):
 
 
 def make_boundary_slider(state_var, label, plabel, dim, bounds, step, dist):
-    #    with vuetify.VCol(dense=True):
-    #        with vuetify.VRow(dense=True):
-    #            vuetify.VTextField(
-    #                model_value = (state_var+"[0]", default_params_state[dim][state_var][0]),
-    #                dense=True, hide_details=True, type="number",
-    #                selected=(on_event, "['selected', VuePlotly.safe($event)]")
-    #            )
     vuetify.VRangeSlider(
         persistent_hint=True,
         hint=label,
@@ -403,14 +397,6 @@ def make_boundary_slider(state_var, label, plabel, dim, bounds, step, dist):
         thumb_label="always",
         thumb_size="24",
     )
-
-
-# vuetify.VTextField(
-#     model_value = (state_var+"[1]", default_params_state[dim][state_var][1]),
-#     dense=True, hide_details=True, type="number",
-#     selected=(on_event, "['selected', VuePlotly.safe($event)]")
-# )
-
 
 def create_section_beta_parameters():
     with vuetify.VCard(classes="mt-1"):
@@ -449,13 +435,13 @@ def create_section_normal_parameters():
 
         with _content:
             make_param_slider(
-                "dist_mean_0", "p0 mean", "p0", 0, [0.0, 1.0], 0.01, "Normal"
+                "dist_mean_0", "p0 mean", "p0", 0, [-5.0, 5.0], 0.01, "Normal"
             )
             make_param_slider(
-                "dist_mean_1", "p1 mean", "p1", 1, [0.0, 1.0], 0.01, "Normal"
+                "dist_mean_1", "p1 mean", "p1", 1, [-5.0, 5.0], 0.01, "Normal"
             )
             make_param_slider(
-                "dist_mean_2", "p2 mean", "p2", 2, [0.0, 1.0], 0.01, "Normal"
+                "dist_mean_2", "p2 mean", "p2", 2, [-5.0, 5.0], 0.01, "Normal"
             )
 
 
@@ -468,10 +454,10 @@ def create_section_exponential_parameters():
 
         with _content:
             make_param_slider(
-                "loc_0", "p0 mean", "p0", 0, [-5.0, 5.0], 0.01, "Exponential"
+                "loc_0", "p0 loc", "p0", 0, [-5.0, 5.0], 0.01, "Exponential"
             )
             make_param_slider(
-                "lbd_1", "p1 mean", "p0", 1, [-5.0, 5.0], 0.01, "Exponential"
+                "lbd_1", "p1 lbd", "p0", 1, [-5.0, 5.0], 0.01, "Exponential"
             )
 
 
